@@ -1,0 +1,82 @@
+CREATE TABLE cats."user"
+(
+  user_id integer NOT NULL,
+  user_name character varying(50) NOT NULL,
+  facebook_id character varying(50) NOT NULL,
+  CONSTRAINT pk PRIMARY KEY (user_id)
+)
+
+CREATE TABLE cats.friend
+(
+  user_id integer,
+  friend_id integer,
+  CONSTRAINT friend_friend_id_fkey FOREIGN KEY (friend_id)
+      REFERENCES cats."user" (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT friend_user_id_fkey FOREIGN KEY (user_id)
+      REFERENCES cats."user" (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+CREATE TABLE cats.video
+(
+  video_id integer NOT NULL,
+  video_name character varying(50) NOT NULL,
+  CONSTRAINT video_pkey PRIMARY KEY (video_id)
+)
+
+CREATE TABLE cats.login
+(
+  login_id integer NOT NULL,
+  user_id integer,
+  "time" time without time zone NOT NULL,
+  CONSTRAINT login_pkey PRIMARY KEY (login_id),
+  CONSTRAINT login_user_id_fkey FOREIGN KEY (user_id)
+      REFERENCES cats."user" (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+REATE TABLE cats.suggestion
+(
+  suggestion_id integer NOT NULL,
+  login_id integer,
+  video_id integer,
+  CONSTRAINT suggestion_pkey PRIMARY KEY (suggestion_id),
+  CONSTRAINT suggestion_login_id_fkey FOREIGN KEY (login_id)
+      REFERENCES cats.login (login_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT suggestion_video_id_fkey FOREIGN KEY (video_id)
+      REFERENCES cats.video (video_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+REATE TABLE cats.watch
+(
+  watch_id integer NOT NULL,
+  video_id integer,
+  user_id integer,
+  "time" time without time zone NOT NULL,
+  CONSTRAINT watch_pkey PRIMARY KEY (watch_id),
+  CONSTRAINT watch_user_id_fkey FOREIGN KEY (user_id)
+      REFERENCES cats."user" (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT watch_video_id_fkey FOREIGN KEY (video_id)
+      REFERENCES cats.video (video_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+
+CREATE TABLE cats."like"
+(
+  like_id integer NOT NULL,
+  user_id integer,
+  video_id integer,
+  "time" timestamp without time zone NOT NULL,
+  CONSTRAINT like_pkey PRIMARY KEY (like_id),
+  CONSTRAINT like_user_id_fkey FOREIGN KEY (user_id)
+      REFERENCES cats."user" (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT like_video_id_fkey FOREIGN KEY (video_id)
+      REFERENCES cats.video (video_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+

@@ -1,0 +1,68 @@
+--MAS DSE 201 Databases
+--Homework 1, Sales Table Creation Queries
+--Student: Ryan Riopelle
+--ID: A53111951
+
+
+
+-- Create tables for customers, students and enrollment
+CREATE TABLE states (
+    id          SERIAL PRIMARY KEY,
+    name        TEXT Not Null,
+    abbrev   	TEXT
+);
+
+
+CREATE TABLE customers (
+    id          SERIAL PRIMARY KEY,
+    first_name  TEXT Not Null,
+    last_name   TEXT
+
+);
+
+CREATE TABLE products (
+    id          SERIAL PRIMARY KEY,
+    name        TEXT Not Null,
+    list_price  MONEY
+);
+
+
+
+CREATE TABLE product_categories (
+	id			SERIAL PRIMARY KEY,
+	name 		TEXT Not Null,
+	description	TEXT
+);
+
+-- relationship tables
+
+CREATE TABLE is_from (
+	id 			SERIAL,
+	customer	integer	references customers (id) Not Null,
+	state 		integer references states (id)	Not Null 
+);
+
+CREATE TABLE product_category_relation (
+	id			SERIAL,
+	product_category integer references product_categories (id) Not Null,
+	product 		integer references products (id) Not Null 
+);
+
+
+
+CREATE TABLE sales (
+	id 			SERIAL PRIMARY KEY,
+	product		integer	references products (id) Not Null,
+	customer 	integer references customers(id) Not Null, 
+	quantity	integer Not Null,
+	price_paid	money,
+	is_discount	bit,
+	purschase_date date,
+	state 		integer references states(id)
+);
+
+
+
+--create table sales
+
+

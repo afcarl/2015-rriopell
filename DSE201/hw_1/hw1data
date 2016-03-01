@@ -1,0 +1,24 @@
+INSERT INTO products (name, list_price) VALUES ('Drill', '50.21'),('Lexus', '32000.99'),('Mercedes', '40000.00'),
+('BMW', '35000.00'),('Audi', '37000.00'),('Mazda', '25000.000'),('Hair gel', '5.00'),('Axe', '3.54'),('Advil', '10.39'),
+('Wrench', '18.21'),('Saw', '19.19');
+
+
+INSERT INTO product_category (name,description) Values ('Cars','This describes car types of cars that someone can purchase'),
+('Hardware', ' Can be found at hardware store'), ('Product de toilet','Can be found at the grocery store');
+
+
+-- create table for states
+INSERT INTO states (name, abbrev) VALUES ('AL', 'Alabama'),
+('AK', 'Alaska'), ('AZ', 'Arizona'), ('AR', 'Arkansas'),('CA', 'California'),('CO', 'Colorado'),('CT', 'Connecticut'),
+('DE', 'Delaware'),('DC', 'District of Columbia'),('FL', 'Florida'),('GA', 'Georgia'),('HI', 'Hawaii'),('ID', 'Idaho'),
+('IL', 'Illinois'),('IN', 'Indiana'),('IA', 'Iowa'),('KS', 'Kansas'),('KY', 'Kentucky'),('LA', 'Louisiana'),
+('ME', 'Maine'),('MD', 'Maryland'),('MA', 'Massachusetts'),('MI', 'Michigan'),('MN', 'Minnesota'),('MS', 'Mississippi'),
+('MO', 'Missouri'),('MT', 'Montana'),('NE', 'Nebraska'),('NV', 'Nevada'),('NH', 'New Hampshire'),('NJ', 'New Jersey'),
+('NM', 'New Mexico'),('NY', 'New York'),('NC', 'North Carolina'),('ND', 'North Dakota'),('OH', 'Ohio'),
+('OK', 'Oklahoma'),('OR', 'Oregon'),('PA', 'Pennsylvania'),('PR', 'Puerto Rico'),('RI', 'Rhode Island'),('SC', 'South Carolina'),
+('SD', 'South Dakota'),('TN', 'Tennessee'),('TX', 'Texas'),('UT', 'Utah'),('VT', 'Vermont'),('VA', 'Virginia'),
+('WA', 'Washington'),('WV', 'West Virginia'),('WI', 'Wisconsin'),('WY', 'Wyoming');
+
+-- Create tables for customers
+INSERT INTO customers (first_name, last_name) VALUES ('Ryan', 'Riopelle'),
+('Jeff', 'Riopelle'), ('Ellie', 'Wheeler'), ('Garth', 'Brooks'), ('Jimmy', 'Neutron');

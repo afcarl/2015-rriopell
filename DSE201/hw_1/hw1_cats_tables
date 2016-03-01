@@ -1,0 +1,54 @@
+--MAS DSE 201 Databases
+--Homework 1, Cats Table Creation Queries
+--Student: Ryan Riopelle
+--ID: A53111951
+
+CREATE TABLE users (
+    id          SERIAL PRIMARY KEY,
+    first_name  TEXT Not Null,
+    last_name   TEXT,
+    facebook_ID TEXT Not Null UNIQUE
+
+);
+
+CREATE TABLE videos (
+    id          SERIAL PRIMARY KEY,
+    name        TEXT Not Null
+);
+
+-- relationship tables
+
+CREATE TABLE following (
+    id      SERIAL,
+    follows     integer references users (id) Not Null,
+    is_followed integer references users (id) Not Null 
+);
+
+CREATE TABLE likes (
+    id          SERIAL,
+    user_name   integer references users (id) Not Null,
+    video       integer references videos (id) Not Null 
+);
+
+CREATE TABLE watched (
+    id          SERIAL,
+    user_name        integer references users (id) Not Null,
+    video       integer references videos (id) Not Null 
+);
+
+CREATE TABLE login (
+    id          SERIAL Primary Key,
+    user_name   integer references users (id) Not Null,
+    login_time  timestamp Not Null
+);
+
+CREATE TABLE suggested (
+    id          SERIAL,
+    login_time  integer references login (id) Not Null,
+    video       integer references videos (id) Not Null 
+);
+-- I did not include username in the suggested tab becasue you could do 
+--an outer join to get that information
+
+
+
