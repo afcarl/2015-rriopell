@@ -1,0 +1,159 @@
+
+--Original Query
+
+Option “My kind of cats – with preference (to cat aficionados that have the same tastes)”: 
+--The Top-10 cat videos are the ones that have collected the highest sum of weighted likes 
+--from every other user Y (i.e., given a cat video, each like on it, is multiplied according to a weight).
+--The weight is the log cosine lc(X,Y) defined as follows: Conceptually, there is a vector vx for each user Y, including the logged-in user
+--X. The vector has as many elements as the number of cat videos. 
+--Element i is 1 if Y liked the ith cat video; it is 0 otherwise. For example, 
+--if 201Cats has five cat videos and user 21 liked only the 1st and the 4th, the v21=<1,0,0,1,0>, i.e., 
+--v21[1]=v21[4]=1 and v21[2]= v21[3]=v21[5]=0. Assuming there are N cat videos, the log cosine lc(X, Y) is
+
+
+WITH WeightOfUsers
+AS (SELECT ly.user_id,LOG(1 + COUNT(*)) AS weight FROM cats.LIKE lx,cats.LIKE ly
+WHERE lx.user_id = 1 AND lx.video_id = ly.video_id GROUP BY ly.user_id)
+SELECT l.video_id,SUM(w.weight) AS sum_weight
+FROM cats.LIKE l,WeightOfUsers w
+WHERE l.user_id = w.user_id
+GROUP BY l.video_id
+ORDER BY sum_weight DESC LIMIT 10
+
+
+
+--Table Precomputation
+DROP TABLE IF EXISTS cats.PRE_WeightOfUsers;
+CREATE TABLE cats.PRE_WeightOfUsers   AS 	
+SELECT lx.user_id AS x_user_id,
+	ly.user_id AS y_user_id,
+	COUNT(*) AS weight
+FROM cats.LIKE lx
+	,cats.LIKE ly
+WHERE lx.video_id = ly.video_id
+GROUP BY lx.user_id, ly.user_id;
+
+--Triggers
+
+CREATE or replace FUNCTION cats.FN_PRE_WeightOfUsers() RETURNS trigger AS $FN_PRE_WeightOfUsers$
+BEGIN CREATE TEMP TABLE users as SELECT user_id FROM cats.LIKE WHERE video_id = NEW.video_id
+UNION SELECT NEW.user_id; WITH U AS (SELECT user_id FROM users)
+UPDATE CATS.PRE_WeightOfUsers SET weight = weight + 1 WHERE (x_user_id IN (SELECT user_id
+FROM U) AND y_user_id = NEW.user_id)
+OR (y_user_id IN (SELECT user_id FROM U) AND x_user_id = NEW.user_id);
+WITH U AS (SELECT user_id FROM users), I as (SELECT u.user_id as x_user_id, NEW.user_id as y_user_id
+FROM U UNION SELECT NEW.user_id as x_user_id , u.user_id as y_user_id 
+FROM U UNION SELECT NEW.user_id as x_user_id, NEW.user_id as y_user_id), X as (
+SELECT * FROM I EXCEPT SELECT x_user_id,y_user_id FROM Cats.PRE_WeightOfUsers) INSERT INTO cats.PRE_WeightOfUsers 
+(x_user_id,y_user_id,weight)SELECT *,1 FROM X; RETURN NEW;END;
+$FN_PRE_WeightOfUsers$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_LIKE ON CATS.LIKE ;
+CREATE TRIGGER trigger_LIKE 
+BEFORE INSERT ON CATS.LIKE 
+FOR EACH ROW EXECUTE PROCEDURE cats.FN_PRE_WeightOfUsers();
+
+
+--New Query
+WITH WeightOfUsers AS (SELECT y_user_Id AS user_id,log(sum(1 + weight)) AS weight
+FROM cats.PRE_WeightOfUsers WHERE x_user_id = 49976 GROUP BY y_user_id)
+SELECT l.video_id,SUM(w.weight) AS sum_weight FROM cats.LIKE l, WeightOfUsers w
+WHERE l.user_id = w.user_id GROUP BY l.video_id ORDER BY sum_weight DESC LIMIT 10
+
+
+--Indexes
+
+CREATE INDEX pre_weightofusers_x_user_id_idx
+  ON cats.pre_weightofusers
+  USING btree
+  (x_user_id);
+
+CREATE INDEX pre_weightofusers_x_user_id_y_user_id_weight_idx
+  ON cats.pre_weightofusers
+  USING btree
+  (x_user_id, y_user_id, weight);
+
+CREATE INDEX like_video_id_user_id_idx
+  ON cats."like"
+  USING btree
+  (video_id, user_id);
+
+
+
+
+--Test the perofmance of the trigger function - 95572
+CREATE TEMP TABLE users as 
+
+SELECT user_id FROM cats.LIKE WHERE video_id = 25
+
+UNION 
+
+SELECT 25;
+
+
+
+WITH U AS (SELECT user_id FROM users)
+
+UPDATE CATS.PRE_WeightOfUsers SET weight = weight + 1 WHERE (x_user_id IN (SELECT user_id
+
+FROM U) AND y_user_id = NEW.user_id)
+
+OR (y_user_id IN (SELECT user_id FROM U) AND x_user_id = NEW.user_id);
+
+
+
+WITH U AS (SELECT user_id FROM users), I as (SELECT u.user_id as x_user_id, NEW.user_id as y_user_id
+FROM U UNION SELECT NEW.user_id as x_user_id , u.user_id as y_user_id 
+FROM U UNION SELECT NEW.user_id as x_user_id, NEW.user_id as y_user_id), X as (
+SELECT * FROM I EXCEPT SELECT x_user_id,y_user_id FROM Cats.PRE_WeightOfUsers) INSERT INTO cats.PRE_WeightOfUsers 
+(x_user_id,y_user_id,weight)SELECT *,1 FROM X; RETURN NEW;END;
+$FN_PRE_WeightOfUsers$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_LIKE ON CATS.LIKE ;
+CREATE TRIGGER trigger_LIKE 
+BEFORE INSERT ON CATS.LIKE 
+FOR EACH ROW EXECUTE PROCEDURE cats.FN_PRE_WeightOfUsers();
+
+
+
+
+
+WITH U AS (
+		SELECT user_id
+		FROM users
+	), I as (
+		SELECT u.user_id as x_user_id, NEW.user_id as y_user_id
+		FROM U
+		
+		UNION
+		
+		SELECT NEW.user_id as x_user_id , u.user_id as y_user_id
+		FROM U
+		
+		UNION
+		
+		SELECT NEW.user_id as x_user_id, NEW.user_id as y_user_id
+	), X as (
+		SELECT *
+		FROM I
+
+		EXCEPT
+
+		SELECT x_user_id
+			,y_user_id
+		FROM Cats.PRE_WeightOfUsers
+	)
+	INSERT INTO cats.PRE_WeightOfUsers (
+		x_user_id
+		,y_user_id
+		,weight
+		)
+	SELECT *
+		,1
+	FROM X;
+
+
+
+
+
+
